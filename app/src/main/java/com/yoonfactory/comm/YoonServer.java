@@ -126,7 +126,7 @@ public class YoonServer implements IYoonTcpIp, IReceiveMessageEventListener, IRe
         return listen();
     }
 
-    private Thread m_threadAccept = null;
+    private Thread m_pThreadAccept = null;
 
     public boolean listen() {
         if (m_connectedClientSocket != null && m_connectedClientSocket.isConnected())
@@ -142,8 +142,8 @@ public class YoonServer implements IYoonTcpIp, IReceiveMessageEventListener, IRe
                 int BUFFER_SIZE = 4096;
                 m_serverSocket.setReceiveBufferSize(BUFFER_SIZE);
                 //// Start the client accept thread
-                if (m_threadAccept == null) {
-                    m_threadAccept = new Thread(() -> {
+                if (m_pThreadAccept == null) {
+                    m_pThreadAccept = new Thread(() -> {
                         int nCount = 0;
                         CommEventHandler.callShowMessageEvent(YoonServer.class, eYoonStatus.Info, "Start Accept Thread");
                         try {
@@ -157,7 +157,7 @@ public class YoonServer implements IYoonTcpIp, IReceiveMessageEventListener, IRe
                             CommEventHandler.callShowMessageEvent(YoonServer.class, eYoonStatus.Conform, "Exit Thread : " + Integer.toString(nCount));
                         }
                     });
-                    m_threadAccept.start();
+                    m_pThreadAccept.start();
                 }
             }
         } catch (IOException e) {
@@ -215,13 +215,13 @@ public class YoonServer implements IYoonTcpIp, IReceiveMessageEventListener, IRe
                 if (m_threadSocket.isAlive())
                     m_threadSocket.interrupt();
                 m_pRunnableSocket = null;
-                m_threadAccept = null;
+                m_pThreadAccept = null;
             }
             //// Stop Active Accept Thread
-            if (m_threadAccept != null) {
-                if (m_threadAccept.isAlive())
-                    m_threadAccept.interrupt();
-                m_threadAccept = null;
+            if (m_pThreadAccept != null) {
+                if (m_pThreadAccept.isAlive())
+                    m_pThreadAccept.interrupt();
+                m_pThreadAccept = null;
             }
             //// Close the Socket
             m_serverSocket.close();

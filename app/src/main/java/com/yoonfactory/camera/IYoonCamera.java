@@ -15,7 +15,7 @@ public interface IYoonCamera {
 
     void setImageHeight(int nHeight);
 
-    int open(int nNo);
+    void open();
 
     void start();
 

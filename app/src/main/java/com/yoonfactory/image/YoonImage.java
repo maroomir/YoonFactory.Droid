@@ -36,7 +36,7 @@ public class YoonImage implements IYoonFile {
     }
 
     public YoonImage(Bitmap pImage) {
-        m_pImage = pImage;
+        m_pImage = Bitmap.createBitmap(pImage);
     }
 
     public YoonImage(int nWidth, int nHeight, int nPlane) {

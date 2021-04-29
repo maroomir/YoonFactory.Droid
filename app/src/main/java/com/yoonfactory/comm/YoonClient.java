@@ -111,7 +111,7 @@ public class YoonClient implements IYoonTcpIp, IReceiveMessageEventListener, IRe
         return connect();
     }
 
-    private Thread m_threadSocket = null;
+    private Thread m_pThreadSocket = null;
     private ActiveTcpRunnable m_pRunnableSocket = null;
 
     public boolean connect() {
@@ -127,8 +127,8 @@ public class YoonClient implements IYoonTcpIp, IReceiveMessageEventListener, IRe
             m_clientSocket.setReceiveBufferSize(BUFFER_SIZE);
             //// Run Socket Thread
             m_pRunnableSocket = new ActiveTcpRunnable(m_clientSocket);
-            m_threadSocket = new Thread(m_pRunnableSocket);
-            m_threadSocket.start();
+            m_pThreadSocket = new Thread(m_pRunnableSocket);
+            m_pThreadSocket.start();
         } catch (IOException e) {
             e.printStackTrace();
             CommEventHandler.callShowMessageEvent(YoonClient.class, eYoonStatus.Error, e.getMessage());
@@ -161,8 +161,8 @@ public class YoonClient implements IYoonTcpIp, IReceiveMessageEventListener, IRe
             if(m_pRunnableSocket != null)
             {
                 m_pRunnableSocket.close();
-                if (m_threadSocket.isAlive())
-                    m_threadSocket.interrupt();
+                if (m_pThreadSocket.isAlive())
+                    m_pThreadSocket.interrupt();
             }
             //// Close the Socket
             m_clientSocket.close();

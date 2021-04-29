@@ -21,7 +21,7 @@ import com.yoonfactory.image.YoonImage;
 
 import java.util.List;
 
-public class YoonRealsense implements IYoonCamera{
+public class YoonRealsense implements IYoonCamera {
     private static final int MAX_IMAGE_WIDTH = 1920;
     private static final int MAX_IMAGE_HEIGHT = 1080;
     private static final int MAX_DEPTH_WIDTH = 1280;
@@ -99,6 +99,13 @@ public class YoonRealsense implements IYoonCamera{
     }
 
     @Override
+    public void open() {
+        if (m_bOpenCamera) return;
+        if (m_nImageWidth > MAX_IMAGE_WIDTH || m_nImageHeight > MAX_IMAGE_HEIGHT) return;
+        if (m_nDepthWidth > MAX_DEPTH_WIDTH || m_nDepthHeight > MAX_DEPTH_HEIGHT) return;
+        open(0);
+    }
+
     public int open(int nNo) {
         if (m_bOpenCamera) return -1;
         if (m_nImageWidth > MAX_IMAGE_WIDTH || m_nImageHeight > MAX_IMAGE_HEIGHT) return -1;
@@ -187,7 +194,49 @@ public class YoonRealsense implements IYoonCamera{
 
     @Override
     public boolean getImage(int nTimeout) {
-        return false;
+        if (m_pContext == null || m_pPipeline == null || !m_bFlagUseRGBStream)
+            return false;
+        try (FrameSet pFrameSet = m_pPipeline.waitForFrames()) {
+            try (FrameSet pFrameSetAlign = m_pAlign.process(pFrameSet)) {
+                try (Frame pFrame = pFrameSetAlign.first(StreamType.COLOR)) {
+                    VideoFrame pFrameColor = pFrame.as(Extension.VIDEO_FRAME);
+                    int nBpp = pFrameColor.getBitsPerPixel();
+                    int nWidth = pFrameColor.getWidth();
+                    int nHeight = pFrameColor.getHeight();
+                    byte[] pBuffer = new byte[nBpp * nWidth * nHeight];
+                    pFrameColor.getData(pBuffer);
+                    YoonImage pImage = new YoonImage(pBuffer, nWidth, nHeight, nBpp);
+                    CameraEventHandler.callReceiveImageEvent(YoonRealsense.class, pImage);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    public boolean getDepth(int nTimeout) {
+        if (m_pContext == null || m_pPipeline == null || !m_bFlagUseDepthStream)
+            return false;
+        try (FrameSet pFrameSet = m_pPipeline.waitForFrames()) {
+            try (FrameSet pFrameSetAlign = m_pAlign.process(pFrameSet)) {
+                try (Frame pFrame = pFrameSetAlign.first(StreamType.DEPTH)) {
+                    DepthFrame pFrameDepth = pFrame.as(Extension.DEPTH_FRAME);
+                    int nBpp = pFrameDepth.getBitsPerPixel();
+                    int nWidth = pFrameDepth.getWidth();
+                    int nHeight = pFrameDepth.getHeight();
+                    byte[] pBuffer = new byte[nBpp * nWidth * nHeight];
+                    pFrameDepth.getData(pBuffer);
+                    YoonImage pImage = new YoonImage(pBuffer, nWidth, nHeight, nBpp);
+                    CameraEventHandler.callReceiveImageEvent(YoonRealsense.class, pImage);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     public void processLive() {
@@ -195,8 +244,8 @@ public class YoonRealsense implements IYoonCamera{
             try (FrameSet pFrameSet = m_pPipeline.waitForFrames()) {
                 try (FrameSet pFrameSetAlign = m_pAlign.process(pFrameSet)) {
                     if (m_bFlagUseRGBStream) {
-                        Frame pFrame = pFrameSetAlign.first(StreamType.COLOR);
-                        try (VideoFrame pFrameColor = pFrame.as(Extension.VIDEO_FRAME)) {
+                        try (Frame pFrame = pFrameSetAlign.first(StreamType.COLOR)) {
+                            VideoFrame pFrameColor = pFrame.as(Extension.VIDEO_FRAME);
                             int nBpp = pFrameColor.getBitsPerPixel();
                             int nWidth = pFrameColor.getWidth();
                             int nHeight = pFrameColor.getHeight();
@@ -207,8 +256,8 @@ public class YoonRealsense implements IYoonCamera{
                         }
                     }
                     if (m_bFlagUseDepthStream) {
-                        Frame pFrame = pFrameSetAlign.first(StreamType.DEPTH);
-                        try (DepthFrame pFrameDepth = pFrame.as(Extension.DEPTH_FRAME)) {
+                        try (Frame pFrame = pFrameSetAlign.first(StreamType.DEPTH)) {
+                            VideoFrame pFrameDepth = pFrame.as(Extension.DEPTH_FRAME);
                             int nBpp = pFrameDepth.getBitsPerPixel();
                             int nWidth = pFrameDepth.getWidth();
                             int nHeight = pFrameDepth.getHeight();
