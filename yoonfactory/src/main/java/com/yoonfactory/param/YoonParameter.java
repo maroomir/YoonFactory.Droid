@@ -1,5 +1,9 @@
 package com.yoonfactory.param;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import com.yoonfactory.file.YoonJson;
 
 import java.io.FileNotFoundException;
@@ -39,6 +43,7 @@ public class YoonParameter {
         return pParam.Parameter.eqauls(Parameter) && pParam.getType() == m_pTypeParam && pParam.RootDirectory == RootDirectory;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     public boolean saveParameter() {
         return saveParameter(m_pTypeParam.getTypeName());
     }
@@ -51,10 +56,12 @@ public class YoonParameter {
         return pJson.saveFile(Parameter, m_pTypeParam);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     public boolean loadParameter(boolean bSaveIfFalse) {
         return loadParameter(m_pTypeParam.getTypeName(), bSaveIfFalse);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     public boolean loadParameter(String strFileName, boolean bSaveIfFalse) {
         if (RootDirectory == "" || Parameter == null) return false;
 

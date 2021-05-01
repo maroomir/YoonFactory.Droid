@@ -1,5 +1,9 @@
 package com.yoonfactory.param;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -144,6 +148,7 @@ public class YoonContainer implements IYoonContainer<String, YoonParameter> {
         return m_pMapObject.entrySet();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.P)
     @Override
     public boolean loadValue(String strKey) {
         if (m_strDirRoot == "" || strKey == "")
