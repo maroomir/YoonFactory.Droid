@@ -1,2 +1,3 @@
-include ':app'
+include ':extcontrol'
+include ':yoonfactory'
 rootProject.name = "YoonFactory.Droid"
