@@ -4,8 +4,6 @@ import android.graphics.Bitmap;
 
 import com.flir.thermalsdk.ErrorCode;
 import com.flir.thermalsdk.androidsdk.image.BitmapAndroid;
-import com.flir.thermalsdk.image.ImageBase;
-import com.flir.thermalsdk.image.ImageFactory;
 import com.flir.thermalsdk.image.JavaImageBuffer;
 import com.flir.thermalsdk.live.Camera;
 import com.flir.thermalsdk.live.CommunicationInterface;
@@ -24,7 +22,6 @@ import java.io.IOException;
 public class YoonFlir implements IYoonCamera, DiscoveryEventListener, ConnectionStatusListener,
         ThermalImageStreamListener {
     Camera m_pCamera = null;
-    ConnectParameters m_pParamConnect;
     boolean m_bOpenCamera = false;
     boolean m_bLive = false;
     int m_nWidth = 0;
@@ -104,7 +101,8 @@ public class YoonFlir implements IYoonCamera, DiscoveryEventListener, Connection
     public void open() {
         if (m_bOpenCamera) return;
         try {
-            DiscoveryFactory.getInstance().scan(this, CommunicationInterface.USB);
+            DiscoveryFactory.getInstance().stop(CommunicationInterface.EMULATOR, CommunicationInterface.USB);
+            DiscoveryFactory.getInstance().scan(this, CommunicationInterface.EMULATOR, CommunicationInterface.USB);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.yoonsample.extcontrol">
 
+    <!-- some hw might not support Usb Host mode so it's recommended to add this -->
+    <uses-feature android:name="android.hardware.usb.host" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

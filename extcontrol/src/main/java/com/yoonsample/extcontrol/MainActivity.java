@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         CommonClass.pDLM = new YoonDisplayer();
         CommonClass.pView = (ImageView)findViewById(R.id.imageView);
-        //initClient();
+        initClient();
     }
 
     public void initClient() {
