@@ -8,7 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
 
-public class YoonServer implements IYoonTcpIp, IReceiveMessageEventListener, IRetryOpenEventListener {
+public class YoonServer implements IYoonTcpIp {
     private boolean m_bRetryOpen = false;
     private boolean m_bSend = false;
     private StringBuilder m_sbReceiveMessage;
@@ -19,24 +19,26 @@ public class YoonServer implements IYoonTcpIp, IReceiveMessageEventListener, IRe
     private int m_nTimeout = 10000;
     private ServerSocket m_serverSocket = null;
     private Socket m_connectedClientSocket = null;
+    private IReceiveMessageEventListener m_pListenerReceiveMessage = new IReceiveMessageEventListener() {
+        @Override
+        public void onReceiveMessageEvent(String strReceiveMessage) {
+            m_sbReceiveMessage.append(strReceiveMessage);
+            m_sbReceiveMessage.append(System.lineSeparator());
+        }
+    };
+    private IRetryOpenEventListener m_pListenerRetry = new IRetryOpenEventListener() {
+        @Override
+        public void onRetryOpenEvent() {
+            listen();
+        }
+    };
 
     public YoonServer() {
         // Initialize Manageable Variable
         m_sbReceiveMessage = new StringBuilder();
         // Event Subscription
-        CommEventHandler.addRetryOpenListener(this);
-        CommEventHandler.addReceiveMessageListener(this);
-    }
-
-    @Override
-    public void onRetryOpenEvent() {
-        listen();
-    }
-
-    @Override
-    public void onReceiveMessageEvent(String strReceiveMessage) {
-        m_sbReceiveMessage.append(strReceiveMessage);
-        m_sbReceiveMessage.append(System.lineSeparator());
+        CommEventHandler.addRetryOpenListener(m_pListenerRetry);
+        CommEventHandler.addReceiveMessageListener(m_pListenerReceiveMessage);
     }
 
     @Override
@@ -226,8 +228,8 @@ public class YoonServer implements IYoonTcpIp, IReceiveMessageEventListener, IRe
             //// Close the Socket
             m_serverSocket.close();
             //// Remove the Event Listener
-            CommEventHandler.removeReceiveMessageListener(this);
-            CommEventHandler.removeRetryOpenListener(this);
+            CommEventHandler.removeReceiveMessageListener(m_pListenerReceiveMessage);
+            CommEventHandler.removeRetryOpenListener(m_pListenerRetry);
         } catch (IOException e) {
             e.printStackTrace();
             CommEventHandler.callShowMessageEvent(YoonServer.class, eYoonStatus.Error, e.getMessage());

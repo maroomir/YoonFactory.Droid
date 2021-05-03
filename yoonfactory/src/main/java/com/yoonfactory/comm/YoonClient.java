@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
 
-public class YoonClient implements IYoonTcpIp, IReceiveMessageEventListener, IRetryOpenEventListener {
+public class YoonClient implements IYoonTcpIp {
     private boolean m_bRetryOpen = false;
     private boolean m_bSend = false;
     private final StringBuilder m_sbReceiveMessage;
@@ -15,24 +15,26 @@ public class YoonClient implements IYoonTcpIp, IReceiveMessageEventListener, IRe
     private int m_nCountRetry = 10;
     private int m_nTimeout = 10000;
     private Socket m_clientSocket = null;
+    private IReceiveMessageEventListener m_pListenerReceiveMessage = new IReceiveMessageEventListener() {
+        @Override
+        public void onReceiveMessageEvent(String strReceiveMessage) {
+            m_sbReceiveMessage.append(strReceiveMessage);
+            m_sbReceiveMessage.append(System.lineSeparator());
+        }
+    };
+    private IRetryOpenEventListener m_pListenerRetry = new IRetryOpenEventListener() {
+        @Override
+        public void onRetryOpenEvent() {
+            connect();
+        }
+    };
 
     public YoonClient() {
         // Initialize Manageable Variable
         m_sbReceiveMessage = new StringBuilder();
         // Event Subscription
-        CommEventHandler.addRetryOpenListener(this);
-        CommEventHandler.addReceiveMessageListener(this);
-    }
-
-    @Override
-    public void onRetryOpenEvent() {
-        connect();
-    }
-
-    @Override
-    public void onReceiveMessageEvent(String strReceiveMessage) {
-        m_sbReceiveMessage.append(strReceiveMessage);
-        m_sbReceiveMessage.append(System.lineSeparator());
+        CommEventHandler.addRetryOpenListener(m_pListenerRetry);
+        CommEventHandler.addReceiveMessageListener(m_pListenerReceiveMessage);
     }
 
     @Override
@@ -167,8 +169,8 @@ public class YoonClient implements IYoonTcpIp, IReceiveMessageEventListener, IRe
             //// Close the Socket
             m_clientSocket.close();
             //// Remove the Event Listener
-            CommEventHandler.removeReceiveMessageListener(this);
-            CommEventHandler.removeRetryOpenListener(this);
+            CommEventHandler.removeReceiveMessageListener(m_pListenerReceiveMessage);
+            CommEventHandler.removeRetryOpenListener(m_pListenerRetry);
 
         } catch (IOException e) {
             e.printStackTrace();

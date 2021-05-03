@@ -11,7 +11,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/extcontrol" />
+            <option value="$PROJECT_DIR$/flirctrl" />
             <option value="$PROJECT_DIR$/yoonfactory" />
           </set>
         </option>
